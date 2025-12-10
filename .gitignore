@@ -1,0 +1,76 @@
+# ===============================
+# Flutter / Dart
+# ===============================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Flutter generated
+flutter_export_environment.sh
+
+# ===============================
+# Firebase (keep secrets out)
+# ===============================
+# 🔴 Do NOT commit real Firebase configs
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Optional (if you generated this and want to keep secrets out)
+lib/firebase_options.dart
+
+# ===============================
+# Android
+# ===============================
+android/.gradle/
+android/.idea/
+android/local.properties
+android/key.properties
+
+# Build outputs
+android/app/build/
+android/build/
+
+# ===============================
+# iOS / macOS
+# ===============================
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Flutter/App.framework
+ios/Flutter/App.xcframework
+ios/DerivedData/
+macos/Pods/
+macos/Flutter/ephemeral/
+
+# ===============================
+# IDEs
+# ===============================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# ===============================
+# Logs
+# ===============================
+*.log
+
+# ===============================
+# OS files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# Environment files
+# ===============================
+.env
+.env.*
