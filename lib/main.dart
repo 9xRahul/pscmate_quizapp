@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'package:pscmate/features/data/datasources/firebase_auth_datasource.dart';
 import 'package:pscmate/features/data/repositories/auth_repository_impl.dart';
-import 'package:pscmate/features/presentation/auth/bloc/bloc/auth_bloc.dart';
+import 'package:pscmate/features/presentation/auth/bloc/auth_bloc.dart';
 import 'package:pscmate/features/presentation/auth/login_page.dart';
 import 'package:pscmate/features/presentation/auth/register_page.dart';
 import 'package:pscmate/features/presentation/home/home_page.dart';
@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
 
         // App routes
         routes: {
-          '/login': (_) => const LoginPage(),
+          '/login': (_) => const LoginScreen(),
           '/register': (_) => const RegisterPage(),
           '/home': (_) => const HomePage(),
         },

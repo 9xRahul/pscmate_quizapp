@@ -1,231 +1,302 @@
-// lib/features/auth/presentation/pages/login_page.dart
+// lib/features/presentation/auth/login_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pscmate/features/data/datasources/firebase_auth_datasource.dart';
-import 'package:pscmate/features/data/repositories/auth_repository_impl.dart';
-import 'package:pscmate/features/presentation/auth/bloc/bloc/auth_bloc.dart';
-import 'package:pscmate/features/presentation/auth/otp_page.dart';
+import 'package:pscmate/core/utils/color_config.dart';
+import 'package:pscmate/features/presentation/auth/bloc/auth_bloc.dart';
 import 'package:pscmate/features/presentation/auth/register_page.dart';
+import 'package:pscmate/features/presentation/auth/widgets/glass_container.dart'
+    hide AppColors;
+import 'package:pscmate/features/presentation/auth/widgets/glowing_textfield.dart';
+import 'package:pscmate/features/presentation/auth/widgets/gradient_button.dart';
 
+import 'package:pscmate/features/presentation/home/home_page.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-  static Route route() => MaterialPageRoute(builder: (_) => const LoginPage());
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          AuthBloc(AuthRepositoryImpl(FirebaseAuthDataSource()))
-            ..add(const AuthCheckRequested()),
-      child: const _LoginView(),
-    );
-  }
-}
-
-class _LoginView extends StatefulWidget {
-  const _LoginView();
+  static Route route() =>
+      MaterialPageRoute(builder: (_) => const LoginScreen());
 
   @override
-  State<_LoginView> createState() => _LoginViewState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginViewState extends State<_LoginView> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _phoneController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailCtl = TextEditingController();
+  final _pwdCtl = TextEditingController();
+  final _phoneCtl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _phoneController.dispose();
+    _emailCtl.dispose();
+    _pwdCtl.dispose();
+    _phoneCtl.dispose();
     super.dispose();
   }
 
-  void _showSnack(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
-  }
+  void _showSnack(String m) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('PSC Mate - Login')),
+      backgroundColor: Colors.white,
+
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
-            _showSnack(state.message);
-          } else if (state is AuthAuthenticated) {
-            // go to home
-            Navigator.of(context).pushReplacementNamed('/home');
-          } else if (state is AuthPhoneCodeSent) {
-            // navigate to OTP page with verificationId
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => OtpPage(verificationId: state.verificationId),
-              ),
+          if (state is AuthError) _showSnack(state.message);
+          if (state is AuthAuthenticated) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HomePage()),
             );
           }
         },
         builder: (context, state) {
           final isLoading = state is AuthLoading;
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                const FlutterLogo(size: 96),
-                const SizedBox(height: 12),
-                const Text(
-                  'Welcome to PSC Mate',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 20),
 
-                // Email/password form
-                Form(
-                  key: _formKey,
+          return SingleChildScrollView(
+            // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: GlassContainer(
+                glowColors: [AppColors.primaryTeal, AppColors.primaryBlue],
+
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 100),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+
                     children: [
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(Icons.email),
+                      // Top icon + heading
+                      ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [
+                            AppColors.primaryBlue,
+                            AppColors.primaryTeal,
+                          ], // Teal to Gold
+                        ).createShader(bounds),
+                        child: Image(
+                          height: 300,
+                          width: 300,
+                          image: AssetImage("assets/png/logo1.png"),
                         ),
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Enter email';
-                          }
-                          if (!v.contains('@')) return 'Enter a valid email';
-                          return null;
-                        },
                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _passwordController,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock),
-                        ),
-                        obscureText: true,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Enter password';
-                          }
-                          if (v.length < 6) return 'Password min 6 chars';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: isLoading
-                            ? null
-                            : () {
-                                if (_formKey.currentState!.validate()) {
-                                  context.read<AuthBloc>().add(
-                                    EmailSignInRequested(
-                                      _emailController.text.trim(),
-                                      _passwordController.text,
-                                    ),
-                                  );
-                                }
+
+                      const SizedBox(height: 28),
+
+                      // Form
+                      Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 30),
+
+                            // --- Inputs ---
+                            GlowingTextField(
+                              icon: Icons.email_outlined,
+                              hintText: 'Email Address',
+                              controller: _emailCtl,
+                              validator: (v) {
+                                if (v == null || v.isEmpty)
+                                  return "Enter email";
+                                if (!v.contains("@"))
+                                  return "Enter valid email";
+                                return null;
                               },
-                        icon: const Icon(Icons.login),
-                        label: isLoading
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            GlowingTextField(
+                              icon: Icons.lock_outline,
+                              hintText: 'Password',
+                              isPassword: true,
+                              controller: _pwdCtl,
+                              validator: (v) {
+                                if (v == null || v.isEmpty)
+                                  return "Enter password";
+                                if (v.length < 6) return "Minimum 6 characters";
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 20),
+
+                            GradientButton(
+                              text: 'LOGIN',
+                              colors: const [
+                                AppColors.primaryBlue,
+                                AppColors.primaryTeal,
+                              ],
+                              onPressed: () {
+                                print("button clicked");
+                                isLoading
+                                    ? null
+                                    : () {
+                                        if (_formKey.currentState!.validate()) {
+                                          context.read<AuthBloc>().add(
+                                            EmailSignInRequested(
+                                              _emailCtl.text.trim(),
+                                              _pwdCtl.text,
+                                            ),
+                                          );
+                                        }
+                                      };
+                              },
+                            ),
+                            const SizedBox(height: 20),
+
+                            const SizedBox(height: 14),
+
+                            const Row(
+                              children: [
+                                Expanded(
+                                  child: Divider(color: AppColors.textFaded),
                                 ),
-                              )
-                            : const Text('Sign in with Email'),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text(
+                                    'OR',
+                                    style: TextStyle(
+                                      color: AppColors.textFaded,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Divider(color: AppColors.textFaded),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+
+                            Container(
+                              width: double.infinity,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: Colors.green),
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    isLoading ? print("true") : print("false");
+
+                                    isLoading
+                                        ? null
+                                        : () => context.read<AuthBloc>().add(
+                                            const GoogleSignInRequested(),
+                                          );
+                                  },
+                                  borderRadius: BorderRadius.circular(28),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: const [
+                                      // Using colored icon to simulate Google logo
+                                      Image(
+                                        height: 20,
+                                        width: 20,
+                                        image: AssetImage(
+                                          'assets/png/google.png',
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Sign in with Google',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Google button
+                            const SizedBox(height: 12),
+
+                            const SizedBox(height: 18),
+
+                            // Register link
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "Don't have an account? ",
+                                  style: TextStyle(color: AppColors.textFaded),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        transitionDuration: const Duration(
+                                          milliseconds: 450,
+                                        ),
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => const RegisterPage(),
+                                        transitionsBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                              child,
+                                            ) {
+                                              final offsetAnimation =
+                                                  Tween<Offset>(
+                                                    begin: const Offset(
+                                                      0.2,
+                                                      0,
+                                                    ), // slide from right
+                                                    end: Offset.zero,
+                                                  ).animate(animation);
+
+                                              final fadeAnimation =
+                                                  Tween<double>(
+                                                    begin: 0.0,
+                                                    end: 1.0,
+                                                  ).animate(animation);
+
+                                              return SlideTransition(
+                                                position: offsetAnimation,
+                                                child: FadeTransition(
+                                                  opacity: fadeAnimation,
+                                                  child: child,
+                                                ),
+                                              );
+                                            },
+                                      ),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Sign Up',
+                                    style: TextStyle(
+                                      color: AppColors.primaryTeal,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 18),
-                const Text('OR', style: TextStyle(color: Colors.grey)),
-                const SizedBox(height: 12),
-
-                // Google Sign-in
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                  ),
-                  onPressed: isLoading
-                      ? null
-                      : () => context.read<AuthBloc>().add(
-                          const GoogleSignInRequested(),
-                        ),
-                  icon: Image.asset(
-                    'assets/google_logo.png',
-                    width: 20,
-                    height: 20,
-                  ), // add asset or use Icon
-                  label: const Text('Sign in with Google'),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Phone number
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _phoneController,
-                        decoration: const InputDecoration(
-                          labelText: 'Phone (with country code)',
-                          hintText: '+91xxxxxxxxxx',
-                          prefixIcon: Icon(Icons.phone),
-                        ),
-                        keyboardType: TextInputType.phone,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: isLoading
-                          ? null
-                          : () {
-                              final phone = _phoneController.text.trim();
-                              if (phone.isEmpty) {
-                                _showSnack(
-                                  'Enter phone number with country code',
-                                );
-                                return;
-                              }
-                              context.read<AuthBloc>().add(
-                                PhoneNumberSubmitted(phone),
-                              );
-                            },
-                      child: const Text('Send OTP'),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 18),
-
-                // Register link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account? "),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const RegisterPage()),
-                      ),
-                      child: const Text('Register'),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           );
         },

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:pscmate/features/presentation/auth/bloc/bloc/auth_bloc.dart';
+import 'package:pscmate/features/presentation/auth/bloc/auth_bloc.dart';
 
 class OtpPage extends StatefulWidget {
   final String verificationId;
