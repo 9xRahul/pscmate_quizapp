@@ -41,33 +41,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: Colors.white,
-
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) _showSnack(state.message);
-          if (state is AuthAuthenticated) {
+          if (state.isError) _showSnack(state.error);
+          if (state.isAuthenticated) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HomePage()),
             );
           }
         },
         builder: (context, state) {
-          final isLoading = state is AuthLoading;
-
           return SingleChildScrollView(
             // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
+              //  width: MediaQuery.of(context).size.width,
               child: GlassContainer(
                 glowColors: [AppColors.primaryTeal, AppColors.primaryBlue],
 
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 100),
+                  padding: const EdgeInsets.only(top: 50),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
 
@@ -127,25 +120,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 20),
 
                             GradientButton(
+                              isLoading: state.isLoading,
                               text: 'LOGIN',
                               colors: const [
                                 AppColors.primaryBlue,
                                 AppColors.primaryTeal,
                               ],
                               onPressed: () {
-                                print("button clicked");
-                                isLoading
-                                    ? null
-                                    : () {
-                                        if (_formKey.currentState!.validate()) {
-                                          context.read<AuthBloc>().add(
-                                            EmailSignInRequested(
-                                              _emailCtl.text.trim(),
-                                              _pwdCtl.text,
-                                            ),
-                                          );
-                                        }
-                                      };
+                                if (_formKey.currentState!.validate()) {
+                                  context.read<AuthBloc>().add(
+                                    EmailSignInRequested(
+                                      _emailCtl.text.trim(),
+                                      _pwdCtl.text,
+                                    ),
+                                  );
+                                }
                               },
                             ),
                             const SizedBox(height: 20),
@@ -181,45 +170,58 @@ class _LoginScreenState extends State<LoginScreen> {
                                 border: Border.all(color: Colors.green),
                                 borderRadius: BorderRadius.circular(28),
                               ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    isLoading ? print("true") : print("false");
-
-                                    isLoading
-                                        ? null
-                                        : () => context.read<AuthBloc>().add(
-                                            const GoogleSignInRequested(),
-                                          );
-                                  },
-                                  borderRadius: BorderRadius.circular(28),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                      // Using colored icon to simulate Google logo
-                                      Image(
-                                        height: 20,
-                                        width: 20,
-                                        image: AssetImage(
-                                          'assets/png/google.png',
-                                        ),
+                              child: BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, state) {
+                                  return Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: state.googleIsLoading
+                                          ? null
+                                          : () {
+                                              context.read<AuthBloc>().add(
+                                                const GoogleSignInRequested(),
+                                              );
+                                            },
+                                      borderRadius: BorderRadius.circular(28),
+                                      child: Center(
+                                        child: state.googleIsLoading
+                                            ? const SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                              )
+                                            : Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: const [
+                                                  Image(
+                                                    height: 20,
+                                                    width: 20,
+                                                    image: AssetImage(
+                                                      'assets/png/google.png',
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    'Sign in with Google',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                       ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Sign in with Google',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-
                             // Google button
                             const SizedBox(height: 12),
 
@@ -293,6 +295,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 90),
                     ],
                   ),
                 ),

@@ -7,12 +7,14 @@ class GradientButton extends StatelessWidget {
   final String text;
   final List<Color> colors;
   final VoidCallback onPressed;
+  bool isLoading;
 
-  const GradientButton({
+  GradientButton({
     super.key,
     required this.text,
     required this.colors,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   @override
@@ -42,15 +44,17 @@ class GradientButton extends StatelessWidget {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(28),
           child: Center(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 1,
-              ),
-            ),
+            child: isLoading
+                ? CircularProgressIndicator()
+                : Text(
+                    text,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1,
+                    ),
+                  ),
           ),
         ),
       ),

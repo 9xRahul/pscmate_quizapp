@@ -23,7 +23,10 @@ class GlassContainer extends StatelessWidget {
         //  margin: const EdgeInsets.all(20), // Margin around the card
         decoration: BoxDecoration(
           color: AppColors.cardDark.withOpacity(0.8),
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(0),
+            topRight: Radius.circular(0),
+          ),
           // border: Border.all(
           //   color: glowColors.first.withOpacity(0.5),
           //   width: 1.5,

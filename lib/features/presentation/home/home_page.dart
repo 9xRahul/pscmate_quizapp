@@ -20,8 +20,17 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () {
                 context.read<AuthBloc>().add(const SignedOut());
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil("/login", (route) => false);
               },
-              child: const Text("Sign out"),
+              child: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  return state.isLoading
+                      ? CircularProgressIndicator()
+                      : Text("Sign out");
+                },
+              ),
             ),
             const SizedBox(width: 16),
             const Text("Home Page"),

@@ -38,6 +38,7 @@ class _RegisterViewState extends State<_RegisterView> {
   final _emailCtl = TextEditingController();
   final _pwdCtl = TextEditingController();
   final _pwd2Ctl = TextEditingController();
+  final _nameCtrl = TextEditingController();
 
   @override
   void dispose() {
@@ -55,8 +56,8 @@ class _RegisterViewState extends State<_RegisterView> {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) _showSnack(state.message);
-          if (state is AuthAuthenticated) {
+          if (state.isError) _showSnack(state.error);
+          if (state.isAuthenticated) {
             Navigator.of(context).pushReplacementNamed('/home');
           }
         },
@@ -98,7 +99,7 @@ class _RegisterViewState extends State<_RegisterView> {
                           GlowingTextField(
                             icon: Icons.email_outlined,
                             hintText: 'Full Name',
-                            controller: _emailCtl,
+                            controller: _nameCtrl,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty)
                                 return "Enter your name";
@@ -168,7 +169,7 @@ class _RegisterViewState extends State<_RegisterView> {
                                           );
                                         }
                                       },
-                                child: isLoading
+                                child: state.isLoading
                                     ? const CircularProgressIndicator()
                                     : GradientButton(
                                         text: 'SIGN UP',
@@ -176,7 +177,14 @@ class _RegisterViewState extends State<_RegisterView> {
                                           AppColors.primaryBlue,
                                           AppColors.primaryTeal,
                                         ],
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          context.read<AuthBloc>().add(
+                                            EmailRegisterRequested(
+                                              _emailCtl.text,
+                                              _pwdCtl.text,
+                                            ),
+                                          );
+                                        },
                                       ),
                               );
                             },

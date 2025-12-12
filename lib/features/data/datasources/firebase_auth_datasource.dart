@@ -1,15 +1,22 @@
+// lib/features/auth/data/datasources/firebase_auth_datasource.dart
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+/// FirebaseAuthDataSource: wraps FirebaseAuth + Firestore helpers used by the repo.
 class FirebaseAuthDataSource {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final FirebaseFirestore _firestore;
 
   FirebaseAuthDataSource({
     FirebaseAuth? firebaseAuth,
     GoogleSignIn? googleSignIn,
+    FirebaseFirestore? firestore,
   }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-       _googleSignIn = googleSignIn ?? GoogleSignIn();
+       _googleSignIn = googleSignIn ?? GoogleSignIn(),
+       _firestore = firestore ?? FirebaseFirestore.instance;
 
   FirebaseAuth get instance => _firebaseAuth;
 
@@ -97,4 +104,56 @@ class FirebaseAuthDataSource {
   }
 
   Future<void> signOut() => _firebaseAuth.signOut();
+
+  // -------------------------
+  // Additional helpers: Firestore users collection
+  // -------------------------
+  CollectionReference get _usersRef => _firestore.collection('users');
+
+  /// Save or merge user profile at users/{uid}
+  Future<void> saveUserProfile({
+    required String uid,
+    required String name,
+    required String email,
+    String? phone,
+    int? age,
+    String? qualification,
+  }) async {
+    final docRef = _usersRef.doc(uid);
+    final now = FieldValue.serverTimestamp();
+    await docRef.set({
+      'uid': uid,
+      'name': name,
+      'email': email,
+      if (phone != null) 'phoneNumber': phone,
+      if (age != null) 'age': age,
+      if (qualification != null) 'qualification': qualification,
+      'createdAt': now,
+      'updatedAt': now,
+    }, SetOptions(merge: true));
+  }
+
+  /// Fetch user document as Map<String, dynamic> or null if missing
+  Future<Map<String, dynamic>?> fetchUserDoc(String uid) async {
+    final doc = await _usersRef.doc(uid).get();
+    if (!doc.exists) return null;
+    return doc.data() as Map<String, dynamic>?;
+  }
+
+  /// Update (merge) user document fields
+  Future<void> updateUserDoc(String uid, Map<String, dynamic> data) async {
+    final docRef = _usersRef.doc(uid);
+    final merged = Map<String, dynamic>.from(data);
+    merged['updatedAt'] = FieldValue.serverTimestamp();
+    await docRef.set(merged, SetOptions(merge: true));
+  }
+
+  /// Update Firebase Auth user's displayName (optional)
+  Future<void> updateFirebaseDisplayName(String displayName) async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      await user.updateDisplayName(displayName);
+      await user.reload();
+    }
+  }
 }

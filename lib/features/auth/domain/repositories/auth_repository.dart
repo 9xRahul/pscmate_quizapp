@@ -28,4 +28,34 @@ abstract class AuthRepository {
   });
 
   Future<void> signOut();
+
+  
+
+  // New profile methods
+  Future<void> registerWithEmailAndProfile({
+    required String email,
+    required String password,
+    required String name,
+    String? phone,
+    int? age,
+    String? qualification,
+  });
+
+  Future<void> saveUserProfile({
+    required String uid,
+    required String name,
+    String? phone,
+    int? age,
+    String? qualification,
+  });
+
+  Future<AuthUser?> fetchUserProfile(String uid);
+
+  Future<void> updateUserProfile({
+    required String uid,
+    String? name,
+    String? phone,
+    int? age,
+    String? qualification,
+  });
 }

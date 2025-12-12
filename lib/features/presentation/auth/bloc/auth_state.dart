@@ -1,37 +1,68 @@
 part of 'auth_bloc.dart';
 
-abstract class AuthState extends Equatable {
-  const AuthState();
+class AuthState extends Equatable {
+  bool isLoading;
+  bool googleIsLoading;
+  bool isAuthenticated;
+  String error;
+  bool isError;
+  AuthUser? user;
+  AuthState({
+    this.isAuthenticated = false,
+    this.isLoading = false,
+    this.error = "",
+    this.isError = false,
+    this.user,
+    this.googleIsLoading = false,
+  });
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [isLoading, isAuthenticated, isError, error];
+
+  AuthState copyWith({
+    bool? isAuthenticated,
+    bool? isLoading,
+    bool? isError,
+    String? error,
+    AuthUser? user,
+    bool? googleIsLoading,
+  }) {
+    return AuthState(
+      error: error ?? this.error,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      isError: isError ?? this.isError,
+      isLoading: isLoading ?? this.isLoading,
+      user: user ?? this.user,
+      googleIsLoading: googleIsLoading ?? this.googleIsLoading,
+    );
+  }
 }
 
 class AuthInitial extends AuthState {
-  const AuthInitial();
+  AuthInitial();
 }
 
 class AuthLoading extends AuthState {
-  const AuthLoading();
+  AuthLoading();
 }
 
 class AuthAuthenticated extends AuthState {
   final AuthUser user;
 
-  const AuthAuthenticated(this.user);
+  AuthAuthenticated(this.user);
 
   @override
   List<Object?> get props => [user];
 }
 
 class AuthUnauthenticated extends AuthState {
-  const AuthUnauthenticated();
+  AuthUnauthenticated();
 }
 
 class AuthPhoneCodeSent extends AuthState {
   final String verificationId;
 
-  const AuthPhoneCodeSent(this.verificationId);
+  AuthPhoneCodeSent(this.verificationId);
 
   @override
   List<Object?> get props => [verificationId];
@@ -40,7 +71,7 @@ class AuthPhoneCodeSent extends AuthState {
 class AuthError extends AuthState {
   final String message;
 
-  const AuthError(this.message);
+  AuthError(this.message);
 
   @override
   List<Object?> get props => [message];

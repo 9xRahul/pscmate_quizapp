@@ -3,8 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:pscmate/features/auth/domain/entities/AuthUser.dart';
 import 'package:pscmate/features/auth/domain/repositories/auth_repository.dart';
 
-
-
 part 'auth_event.dart';
 part 'auth_state.dart';
 
@@ -12,7 +10,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
   String? _verificationId; // for phone login
 
-  AuthBloc(this._authRepository) : super(AuthInitial()) {
+  AuthBloc(this._authRepository)
+    : super(AuthState(error: "", googleIsLoading: false, isLoading: false)) {
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<GoogleSignInRequested>(_onGoogleSignInRequested);
     on<EmailSignInRequested>(_onEmailSignInRequested);
@@ -26,12 +25,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthCheckRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(AuthLoading());
+    emit(
+      state.copyWith(
+        isLoading: false,
+        error: "",
+        isAuthenticated: false,
+        isError: false,
+      ),
+    );
     final user = await _authRepository.getCurrentUser();
     if (user == null) {
-      emit(AuthUnauthenticated());
+      state.copyWith(
+        isLoading: false,
+        error: "",
+        isAuthenticated: false,
+        isError: true,
+      );
     } else {
-      emit(AuthAuthenticated(user));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: "User not found",
+          isAuthenticated: true,
+          isError: false,
+        ),
+      );
     }
   }
 
@@ -39,13 +57,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     GoogleSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(AuthLoading());
+    emit(
+      state.copyWith(
+        error: "",
+        isAuthenticated: false,
+        isError: false,
+        googleIsLoading: true,
+      ),
+    );
     try {
       final user = await _authRepository.signInWithGoogle();
-      emit(AuthAuthenticated(user));
+
+      emit(
+        state.copyWith(
+          error: "",
+          isAuthenticated: true,
+          user: user,
+          isError: false,
+          isLoading: false,
+          googleIsLoading: false,
+        ),
+      );
     } catch (e) {
-      emit(AuthError(e.toString()));
-      emit(AuthUnauthenticated());
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: e.toString(),
+          isAuthenticated: false,
+          isError: true,
+          googleIsLoading: false,
+        ),
+      );
     }
   }
 
@@ -53,16 +95,38 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     EmailSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(AuthLoading());
+    emit(
+      state.copyWith(
+        error: "",
+        isAuthenticated: false,
+
+        isError: false,
+        isLoading: true,
+      ),
+    );
     try {
       final user = await _authRepository.signInWithEmailPassword(
         email: event.email,
         password: event.password,
       );
-      emit(AuthAuthenticated(user));
+      emit(
+        state.copyWith(
+          error: "",
+          isAuthenticated: true,
+          user: user,
+          isError: false,
+          isLoading: false,
+        ),
+      );
     } catch (e) {
-      emit(AuthError(e.toString()));
-      emit(AuthUnauthenticated());
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: e.toString(),
+          isAuthenticated: false,
+          isError: true,
+        ),
+      );
     }
   }
 
@@ -76,10 +140,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
       );
-      emit(AuthAuthenticated(user));
+
+      emit(
+        state.copyWith(
+          error: "",
+          isAuthenticated: true,
+          user: user,
+          isError: false,
+          isLoading: false,
+        ),
+      );
     } catch (e) {
-      emit(AuthError(e.toString()));
-      emit(AuthUnauthenticated());
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: e.toString(),
+          isAuthenticated: false,
+          isError: true,
+        ),
+      );
     }
   }
 
@@ -133,7 +212,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSignedOut(SignedOut event, Emitter<AuthState> emit) async {
-    await _authRepository.signOut();
-    emit(AuthUnauthenticated());
+    // Start loading state
+    emit(state.copyWith(isLoading: true, error: "", isError: false));
+
+    try {
+      // Attempt logout
+      await _authRepository.signOut();
+
+      // Only emit unauthenticated AFTER success
+      emit(
+        state.copyWith(
+          isAuthenticated: false,
+          isLoading: false,
+          user: null,
+          error: "",
+          isError: false,
+        ),
+      );
+    } catch (e) {
+      // Emit failure state — do NOT logout
+      emit(
+        state.copyWith(isLoading: false, error: e.toString(), isError: true),
+      );
+    }
   }
 }
