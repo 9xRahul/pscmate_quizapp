@@ -165,6 +165,7 @@ class _RegisterViewState extends State<_RegisterView> {
                                             EmailRegisterRequested(
                                               _emailCtl.text.trim(),
                                               _pwdCtl.text,
+                                              _nameCtrl.text,
                                             ),
                                           );
                                         }
@@ -182,6 +183,7 @@ class _RegisterViewState extends State<_RegisterView> {
                                             EmailRegisterRequested(
                                               _emailCtl.text,
                                               _pwdCtl.text,
+                                              _nameCtrl.text,
                                             ),
                                           );
                                         },

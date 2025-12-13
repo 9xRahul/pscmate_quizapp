@@ -109,6 +109,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
       );
+
       emit(
         state.copyWith(
           error: "",
@@ -134,18 +135,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     EmailRegisterRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(AuthLoading());
+    emit(
+      state.copyWith(
+        error: "",
+        isAuthenticated: false,
+
+        isError: false,
+        isLoading: true,
+      ),
+    );
     try {
-      final user = await _authRepository.registerWithEmailPassword(
+      // final user = await _authRepository.registerWithEmailPassword(
+      //   email: event.email,
+      //   password: event.password,
+      // );
+
+      final user = await _authRepository.registerWithEmailAndProfile(
         email: event.email,
         password: event.password,
+        name: event.name,
+        
       );
 
       emit(
         state.copyWith(
           error: "",
           isAuthenticated: true,
-          user: user,
+          // user: user,
           isError: false,
           isLoading: false,
         ),

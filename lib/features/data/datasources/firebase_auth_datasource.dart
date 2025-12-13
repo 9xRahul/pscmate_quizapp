@@ -118,6 +118,7 @@ class FirebaseAuthDataSource {
     String? phone,
     int? age,
     String? qualification,
+    String? profilePic,
   }) async {
     final docRef = _usersRef.doc(uid);
     final now = FieldValue.serverTimestamp();
@@ -125,6 +126,7 @@ class FirebaseAuthDataSource {
       'uid': uid,
       'name': name,
       'email': email,
+      'prfoilePic': profilePic,
       if (phone != null) 'phoneNumber': phone,
       if (age != null) 'age': age,
       if (qualification != null) 'qualification': qualification,

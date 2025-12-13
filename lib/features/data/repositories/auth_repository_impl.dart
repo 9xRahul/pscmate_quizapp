@@ -1,5 +1,6 @@
 // lib/features/data/repositories/auth_repository_impl.dart
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pscmate/core/utils/constants.dart';
 import 'package:pscmate/features/auth/domain/entities/AuthUser.dart';
 import 'package:pscmate/features/auth/domain/repositories/auth_repository.dart';
 import 'package:pscmate/features/data/datasources/firebase_auth_datasource.dart';
@@ -102,6 +103,7 @@ class AuthRepositoryImpl implements AuthRepository {
         phone: phone,
         age: age,
         qualification: qualification,
+        profilePic: defaultProfilePic,
       );
 
       // 3) update displayName in FirebaseAuth

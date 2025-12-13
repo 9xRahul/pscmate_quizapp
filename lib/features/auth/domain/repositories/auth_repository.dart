@@ -1,6 +1,5 @@
 import 'package:pscmate/features/auth/domain/entities/AuthUser.dart';
 
-
 abstract class AuthRepository {
   Future<AuthUser?> getCurrentUser();
   Stream<AuthUser?> authStateChanges();
@@ -28,8 +27,6 @@ abstract class AuthRepository {
   });
 
   Future<void> signOut();
-
-  
 
   // New profile methods
   Future<void> registerWithEmailAndProfile({
