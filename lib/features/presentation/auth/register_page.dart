@@ -57,8 +57,9 @@ class _RegisterViewState extends State<_RegisterView> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.isError) _showSnack(state.error);
-          if (state.isAuthenticated) {
-            Navigator.of(context).pushReplacementNamed('/home');
+          if (!state.isError) {
+            _showSnack("Register Success Now You Can Login");
+            Navigator.of(context).pushReplacementNamed('/login');
           }
         },
         child: SingleChildScrollView(

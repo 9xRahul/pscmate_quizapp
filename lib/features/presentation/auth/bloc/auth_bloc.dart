@@ -154,18 +154,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
         name: event.name,
-        
       );
 
       emit(
         state.copyWith(
           error: "",
-          isAuthenticated: true,
+          isAuthenticated: false,
           // user: user,
           isError: false,
           isLoading: false,
         ),
       );
+      await _authRepository.signOut();
     } catch (e) {
       emit(
         state.copyWith(
@@ -175,6 +175,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           isError: true,
         ),
       );
+      await _authRepository.signOut();
     }
   }
 
