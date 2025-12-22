@@ -16,25 +16,22 @@ class _HomePageState extends State<HomePage> {
       body: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(const SignedOut());
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil("/login", (route) => false);
-              },
-              child: BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, state) {
-                  return state.isLoading
-                      ? CircularProgressIndicator()
-                      : Text("Sign out");
-                },
-              ),
-            ),
-            const SizedBox(width: 16),
-            const Text("Home Page"),
-          ],
+          children: [const SizedBox(width: 16), const Text("Home Page")],
+        ),
+      ),
+      bottomNavigationBar: TextButton(
+        onPressed: () {
+          context.read<AuthBloc>().add(const SignedOut());
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil("/login", (route) => false);
+        },
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            return state.isLoading
+                ? CircularProgressIndicator()
+                : Text("Sign out");
+          },
         ),
       ),
     );
